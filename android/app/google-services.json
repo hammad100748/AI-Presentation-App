@@ -1,0 +1,86 @@
+{
+  "project_info": {
+    "project_number": "1035894450264",
+    "project_id": "ai-presentation-4806f",
+    "storage_bucket": "ai-presentation-4806f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1035894450264:android:886437d2c2bf525417422d",
+        "android_client_info": {
+          "package_name": "com.ford9.create.slides.ai.presentation.generator.maker.creator.builder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1035894450264-b26f5es1fmphasefldihpj8r8mq0qck4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ford9.create.slides.ai.presentation.generator.maker.creator.builder",
+            "certificate_hash": "7717b6396a1c718a920d3a3b5b9f5ceadf4ceca4"
+          }
+        },
+        {
+          "client_id": "1035894450264-gso09uat22iodn98g9i2ai6ameclunp1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ford9.create.slides.ai.presentation.generator.maker.creator.builder",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "1035894450264-htbue6b9jkjmkmvq2d2e1nd6ejqpoqu4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ford9.create.slides.ai.presentation.generator.maker.creator.builder",
+            "certificate_hash": "5acef7a8874b1e8412de47b6594abc773eb48000"
+          }
+        },
+        {
+          "client_id": "1035894450264-ndvbaiidgf42k70p7uoql9fnknpoie4o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ford9.create.slides.ai.presentation.generator.maker.creator.builder",
+            "certificate_hash": "4b9916974029c45b81e831fd4cba6404742e5a57"
+          }
+        },
+        {
+          "client_id": "1035894450264-s6dd59gsfkq19hbk86dlmcofaiqn4fi2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ford9.create.slides.ai.presentation.generator.maker.creator.builder",
+            "certificate_hash": "25455846817aaad06ae690cc3f04670ee9b367a1"
+          }
+        },
+        {
+          "client_id": "1035894450264-m86p87jge478btn3m1c0ciubedd8beei.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTAHsEnAkdQffQjrdzNIwVqErLEVL4Qnw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1035894450264-0rl99319s0sl8b4aqrei6f99t6srmf4c.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1035894450264-k8lpr9o53rm78pb30huqn0f9vvsr1vp8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.hk-hasnain.presentationai"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
