@@ -77,9 +77,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.aipresentationgen"
+    namespace "com.ford9.create.slides.ai.presentation.generator.maker.creator.builder"
     defaultConfig {
-        applicationId "com.aipresentationgen"
+        applicationId "com.ford9.create.slides.ai.presentation.generator.maker.creator.builder"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

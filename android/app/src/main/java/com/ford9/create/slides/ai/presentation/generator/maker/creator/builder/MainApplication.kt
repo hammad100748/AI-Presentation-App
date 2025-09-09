@@ -1,4 +1,4 @@
-package com.aipresentationgen
+package com.ford9.create.slides.ai.presentation.generator.maker.creator.builder
 
 import android.app.Application
 import com.facebook.react.PackageList
