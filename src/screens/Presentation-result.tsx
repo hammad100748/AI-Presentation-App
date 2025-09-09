@@ -38,7 +38,6 @@ import TokenUsageBottomSheet from '../components/TokenUsageBottomSheet';
 import {useRewardedContext} from '../context/RewardedAdContext';
 import DownloadAdBottomSheet from '../components/DownloadAdBottomSheet';
 import ShareAdBottomSheet from '../components/ShareAdBottomSheet';
-import MyBannerAd from '../components/MyBannerAd';
 import { useIsFocused } from '@react-navigation/native';
 import adjust from '../utils/adjust';
 

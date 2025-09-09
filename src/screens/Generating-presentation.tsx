@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -21,10 +21,10 @@ import {
   useRoute,
   RouteProp,
 } from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {RootStackParamList} from '../navigations';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigations';
 import { generatePresentation, checkPresentationStatus, SlidesGPTGenerateRequest } from '../../utils/api';
-import {useTokens} from '../context/TokenContext';
+import { useTokens } from '../context/TokenContext';
 import crashlytics from '@react-native-firebase/crashlytics';
 import { useRewardedContext } from '../context/RewardedAdContext';
 import { NativeAdView, NativeAsset, NativeAssetType } from 'react-native-google-mobile-ads';
@@ -87,7 +87,7 @@ const GeneratingPresentation = () => {
   const navigation = useNavigation<GeneratingPresentationNavigationProp>();
   const route = useRoute<GeneratingPresentationRouteProp>();
   const isFocused = useIsFocused();
-  const {isFreeUser, consumeToken} = useTokens();
+  const { isFreeUser, consumeToken } = useTokens();
   const [progress, setProgress] = useState(1);
   const [generationStarted, setGenerationStarted] = useState(false);
   const [statusText, setStatusText] = useState('Analyzing your inputs...');
@@ -217,15 +217,15 @@ const GeneratingPresentation = () => {
   }, []);
 
   // Get params with type safety
-  const {topic, length, slides, language, tone, textAmount, includeImages, customInstructions, template} = route.params;
+  const { topic, length, slides, language, tone, textAmount, includeImages, customInstructions, template } = route.params;
 
   // Start presentation generation on component mount
   useEffect(() => {
     // Add a small delay to prevent immediate execution
     const timer = setTimeout(() => {
-    checkTokenAndStartGeneration();
+      checkTokenAndStartGeneration();
     }, 100);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -310,10 +310,9 @@ const GeneratingPresentation = () => {
       // Don't make more API calls than necessary
       if (pollingCount >= MAX_POLLS || !isMounted.current || taskCompleted) {
         console.log(
-          `Stopping polling: ${
-            taskCompleted
-              ? 'Task completed'
-              : pollingCount >= MAX_POLLS
+          `Stopping polling: ${taskCompleted
+            ? 'Task completed'
+            : pollingCount >= MAX_POLLS
               ? 'Max polls reached'
               : 'Component unmounted'
           }`,
@@ -335,8 +334,7 @@ const GeneratingPresentation = () => {
       }
 
       console.log(
-        `Polling attempt ${
-          pollingCount + 1
+        `Polling attempt ${pollingCount + 1
         }/${MAX_POLLS} for task ID: ${presentationId}`,
       );
       pollTaskStatus(presentationId);
@@ -371,27 +369,36 @@ const GeneratingPresentation = () => {
       };
 
       console.log('🚀 Starting presentation generation with SlidesGPT API:', requestData);
-      
+
       // Call the SlidesGPT API
       const response = await generatePresentation(requestData);
-      
+
       if (response.id) {
         setPresentationId(response.id);
-      setStatusText('Creating your slides...');
-      setProgress(p => Math.max(p, 20));
-      setGenerationStarted(true);
-        
+        setStatusText('Creating your slides...');
+        setProgress(p => Math.max(p, 20));
+        setGenerationStarted(true);
+
         // Start polling for status
         startPolling();
       } else {
+        Alert.alert(
+          'Please Try Again Soon',
+          'We’re currently experiencing high demand and are working to process all requests. Thanks for your patience!'
+        );
         throw new Error('No presentation ID received from SlidesGPT API');
       }
-      
+
     } catch (err: any) {
       console.error('❌ Error starting presentation generation:', err);
       crashlytics().recordError(err);
       setError(true);
       setStatusText('Error generating presentation');
+      Alert.alert(
+        'Please Try Again Soon',
+        'We’re currently experiencing high demand and are working to process all requests. Thanks for your patience!'
+      );
+      
     }
   };
 
@@ -450,27 +457,27 @@ const GeneratingPresentation = () => {
         // Navigate to result with the download URL and presentation ID
         // We need to construct the download URL based on the presentation ID
         const downloadUrl = `https://api.slidesgpt.com/${id}/download`;
-        
+
         // Get the actual slide count from the API response
         const actualSlideCount = statusResponse.slideCount || route.params.slides || 3;
         const actualTitle = statusResponse.title || route.params.topic;
-        
+
         console.log('📊 Actual slide count from API:', actualSlideCount);
         console.log('📊 Actual title from API:', actualTitle);
-        
-          setTimeout(() => {
-            if (isMounted.current) {
-              navigation.navigate('PresentationResult', {
+
+        setTimeout(() => {
+          if (isMounted.current) {
+            navigation.navigate('PresentationResult', {
               presentationUrl: downloadUrl,
               presentationId: id, // Pass the presentation ID for PowerPoint Online access
               templateName: template || 'default',
               fromGenerationScreen: true,
-                topic: route.params.topic,
+              topic: route.params.topic,
               numberOfSlides: actualSlideCount, // Use actual slide count from API
               actualTitle: actualTitle, // Pass actual title from API
-              });
-            }
-          }, 1000);
+            });
+          }
+        }, 1000);
       } else if (statusResponse.status === 'pending' || statusResponse.status === 'processing') {
         // Still processing
         console.log('⏳ Task still pending, continuing to poll...');
@@ -480,7 +487,7 @@ const GeneratingPresentation = () => {
         // Task failed
         console.error('❌ Task failed:', statusResponse.error);
         crashlytics().log(`❌ Task failed: ${statusResponse.error}`);
-        
+
         // Clear polling interval and reset flags
         if (pollingIntervalRef.current) {
           clearInterval(pollingIntervalRef.current);
@@ -488,14 +495,14 @@ const GeneratingPresentation = () => {
         }
         setIsPolling(false);
         hasStartedPolling.current = false;
-        
+
         setError(true);
         setStatusText('Error generating presentation');
       }
     } catch (error: any) {
       console.error('❌ Error polling task status:', error);
       crashlytics().recordError(error);
-      
+
       // Provide more specific error messages based on the error type
       if (error.message.includes('Network connection error')) {
         setStatusText('Network connection issue. Please check your internet connection.');
@@ -522,17 +529,17 @@ const GeneratingPresentation = () => {
       }
 
       console.log('🔗 Opening presentation embed for ID:', presentationId);
-      
+
       // For SlidesGPT, the embed endpoint requires authentication
       // Instead, we'll construct a PowerPoint Online compatible URL
       // or show a message that the user needs to use the SlidesGPT dashboard
-      
+
       setStatusText('Preparing PowerPoint Online view...');
-      
+
       // Option 1: Try to construct a PowerPoint Online compatible URL
       // This might work if SlidesGPT provides a public embed
       const powerpointUrl = `https://api.slidesgpt.com/v1/presentations/${presentationId}/embed`;
-      
+
       // Option 2: Show instructions for manual access
       const instructions = `To view your presentation in PowerPoint Online:
       
@@ -542,7 +549,7 @@ const GeneratingPresentation = () => {
 4. Click "View" or "Open in PowerPoint"
 
 The embed URL requires authentication and cannot be opened directly in a browser.`;
-      
+
       // Show an alert with instructions for the user
       Alert.alert(
         'PowerPoint Online Access',
@@ -569,12 +576,12 @@ The embed URL requires authentication and cannot be opened directly in a browser
           }
         ]
       );
-      
+
       // Log the information for debugging
       console.log('📱 Presentation ID:', presentationId);
       console.log('🔗 Embed URL (requires auth):', powerpointUrl);
       console.log('📋 Instructions:', instructions);
-      
+
     } catch (error) {
       console.error('❌ Error opening presentation embed:', error);
       setStatusText('Error opening presentation');
@@ -624,7 +631,7 @@ The embed URL requires authentication and cannot be opened directly in a browser
               <View style={styles.progressContainer}>
                 {/* Outer spinning circle */}
                 <Animated.View
-                  style={[styles.spinningRing, {transform: [{rotate: spin}]}]}>
+                  style={[styles.spinningRing, { transform: [{ rotate: spin }] }]}>
                   {/* Gradient spots */}
                   <View style={[styles.gradientSpot, styles.gradientSpot1]} />
                   <View style={[styles.gradientSpot, styles.gradientSpot2]} />
@@ -642,7 +649,7 @@ The embed URL requires authentication and cannot be opened directly in a browser
                         styles.progressArc,
                         {
                           transform: [
-                            {rotate: `${Math.min(progress * 3.6, 360)}deg`},
+                            { rotate: `${Math.min(progress * 3.6, 360)}deg` },
                           ],
                         },
                       ]}
@@ -653,7 +660,7 @@ The embed URL requires authentication and cannot be opened directly in a browser
                   <Animated.View
                     style={[
                       styles.progressInnerCircle,
-                      {transform: [{scale: pulseValue}]},
+                      { transform: [{ scale: pulseValue }] },
                     ]}>
                     <Text style={styles.progressText}>
                       {Math.round(progress)}%
@@ -696,7 +703,7 @@ The embed URL requires authentication and cannot be opened directly in a browser
 
               {/* Native Ad inside the white card - Show only for free users */}
               {nativeAd && isFreeUser && (
-                <View style={{width: '100%', alignItems: 'center', marginTop: adjust(16)}}>
+                <View style={{ width: '100%', alignItems: 'center', marginTop: adjust(16) }}>
                   <NativeAdView
                     nativeAd={nativeAd}
                     style={{
@@ -710,31 +717,31 @@ The embed URL requires authentication and cannot be opened directly in a browser
                       elevation: 0,
                       shadowOpacity: 0,
                     }}>
-                    <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: adjust(2)}}>
-                      <View style={{flex: 1, marginRight: adjust(6)}}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: adjust(2) }}>
+                      <View style={{ flex: 1, marginRight: adjust(6) }}>
                         <NativeAsset assetType={NativeAssetType.HEADLINE}>
-                          <Text style={{fontSize: adjust(14), fontWeight: 'bold', color: '#333'}} numberOfLines={1}>
+                          <Text style={{ fontSize: adjust(14), fontWeight: 'bold', color: '#333' }} numberOfLines={1}>
                             {nativeAd.headline || 'Sponsored Content'}
                           </Text>
                         </NativeAsset>
                         <NativeAsset assetType={NativeAssetType.ADVERTISER}>
-                          <Text style={{fontSize: adjust(12), color: '#666', marginTop: adjust(1)}} numberOfLines={1}>
+                          <Text style={{ fontSize: adjust(12), color: '#666', marginTop: adjust(1) }} numberOfLines={1}>
                             {nativeAd.advertiser || 'Advertiser'}
                           </Text>
                         </NativeAsset>
                       </View>
-                      <View style={{backgroundColor: '#FFD700', borderRadius: adjust(5), paddingHorizontal: adjust(6), paddingVertical: adjust(1)}}>
-                        <Text style={{fontWeight: 'bold', color: '#333', fontSize: adjust(12)}}>Ad</Text>
+                      <View style={{ backgroundColor: '#FFD700', borderRadius: adjust(5), paddingHorizontal: adjust(6), paddingVertical: adjust(1) }}>
+                        <Text style={{ fontWeight: 'bold', color: '#333', fontSize: adjust(12) }}>Ad</Text>
                       </View>
                     </View>
                     <NativeAsset assetType={NativeAssetType.BODY}>
-                      <Text style={{fontSize: adjust(12), color: '#444'}} numberOfLines={2}>
+                      <Text style={{ fontSize: adjust(12), color: '#444' }} numberOfLines={2}>
                         {nativeAd.body || 'Advertisement content'}
                       </Text>
                     </NativeAsset>
                     <NativeAsset assetType={NativeAssetType.CALL_TO_ACTION}>
-                      <TouchableOpacity style={{marginTop: adjust(6), backgroundColor: '#4F67ED', borderRadius: adjust(7), paddingVertical: adjust(6), paddingHorizontal: adjust(12), alignItems: 'center'}}>
-                        <Text style={{color: 'white', fontWeight: 'bold', fontSize: adjust(13)}}>
+                      <TouchableOpacity style={{ marginTop: adjust(6), backgroundColor: '#4F67ED', borderRadius: adjust(7), paddingVertical: adjust(6), paddingHorizontal: adjust(12), alignItems: 'center' }}>
+                        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: adjust(13) }}>
                           {nativeAd.callToAction || 'Learn More'}
                         </Text>
                       </TouchableOpacity>
@@ -785,7 +792,7 @@ const styles = StyleSheet.create({
     paddingTop: adjust(40),
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: adjust(8),
     elevation: 5,
@@ -877,7 +884,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     borderTopColor: '#2371EA',
     borderRightColor: '#2371EA',
-    transform: [{rotate: '0deg'}],
+    transform: [{ rotate: '0deg' }],
   },
   progressInnerCircle: {
     width: adjust(120),
@@ -887,7 +894,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: adjust(4),
     elevation: 3,
@@ -971,7 +978,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: adjust(40),
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: adjust(4),
     elevation: 3,

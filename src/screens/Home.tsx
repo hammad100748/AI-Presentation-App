@@ -59,7 +59,7 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const Home = () => {
   const { isSubscribed } = usePurchases();
-  const { showRewardedAd, showInterstitialAdGenerator, nativeAd }: any = useRewardedContext();
+  const { showRewardedAd, nativeAd }: any = useRewardedContext();
   const { totalTokens, isFreeUser } = useTokens();
 
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -125,7 +125,7 @@ const Home = () => {
     }
   }, [isFocused, isSubscribed, pendingShareAfterSubscribe, presentationToShare]);
 
-    useEffect(() => {
+  useEffect(() => {
     try {
 
       const adUnitId = __DEV__ ? TestIds.APP_OPEN : 'ca-app-pub-1643025320304360/6913018358';
@@ -387,15 +387,6 @@ const Home = () => {
 
   return (
     <View style={styles.mainContainer}>
-      {/* Token Usage Bottom Sheet for non-subscribers
-      <TokenUsageBottomSheet
-        visible={showTokenSheet}
-        onClose={handleCloseBottomSheet}
-        onContinueLimited={onContinueLimited}
-        outOfTokens={outOfTokens}
-        source="home"
-      /> */}
-
       <ImageBackground
         source={gradientBg}
         style={styles.backgroundImage}
@@ -793,11 +784,12 @@ const Home = () => {
           setShowTokenSheet(false);
           setTimeout(() => {
             const trimmedInput = inputText.trim();
+
+            // After rewarded, show interstitial then navigate to loader
             showRewardedAd(() => {
-              // After rewarded, show interstitial then navigate to loader
-              showInterstitialAdGenerator({
-                screenToNavigate: 'GeneratingPresentation',
-                topic: trimmedInput,
+
+              navigation.navigate('GeneratingPresentation', {
+                 topic: trimmedInput,
                 length: 'short',
                 slides: 3,
                 language: 'en-US',
@@ -805,8 +797,9 @@ const Home = () => {
                 textAmount: 'standard',
                 includeImages: false,
                 template: 'default'
-              });
+              });              
             });
+
           }, 300);
         }}
         source="custom"

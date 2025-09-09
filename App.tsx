@@ -113,3 +113,18 @@ const App = () => {
 };
 
 export default App;
+
+
+// const CREDENTIALS = {
+//   // PRODUCTION AD UNIT IDs - Force real ads
+//   REWARDED_AD_UNIT_ID_ANDROID: 'ca-app-pub-1643025320304360/7992529256', // PRODUCTION: Real rewarded ad
+//   REWARDED_AD_UNIT_ID_IOS: 'ca-app-pub-1643025320304360/2661122623', // PRODUCTION: Real rewarded ad
+//   APP_OPEN_AD_UNIT_ID_ANDROID: 'ca-app-pub-1643025320304360/6913018358', // PRODUCTION: Real app open ad
+//   APP_OPEN_AD_UNIT_ID_IOS: 'ca-app-pub-1643025320304360/6913018358', // PRODUCTION: Real app open ad (same as Android for now)
+//   BANNER_AD_UNIT_ID: 'ca-app-pub-1643025320304360/7992529256', // PRODUCTION: Real banner ad
+//   // NATIVE_AD_UNIT_ID: 'ca-app-pub-1643025320304360/3718527732',
+//   NATIVE_AD_UNIT_ID: 'ca-app-pub-1643025320304360/3718527732', // PRODUCTION: Force real native ad ID
+  
+//   // INTERSTITIAL_AD_UNIT_ID for create presentation
+//   INTERSTITIAL_AD_UNIT_ID: 'ca-app-pub-1643025320304360/7659209536', // PRODUCTION: Real interstitial ad
+// };
