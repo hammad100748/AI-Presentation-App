@@ -586,7 +586,7 @@ const Login = () => {
                 />
               </View>
             ) : (
-              <Icon name="ogo-google" size={22} color="#4285F4" style={styles.googleIconStyle} />
+              <Icon name="logo-google" size={22} color="#C25449" style={styles.googleIconStyle} />
             )}
             <Text style={styles.googleButtonText}>
               {isLoading ? 'Signing in...' : 'Continue with Google'}

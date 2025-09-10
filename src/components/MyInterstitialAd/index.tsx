@@ -12,7 +12,6 @@ import {
   Platform,
 } from 'react-native';
 import {PRE_LOADED_BANNERS} from './AdsImages/PRE_LOADED_ADS';
-import { getSafeDimensions } from '../../utils/imageOptimization';
 
 // Make analytics import optional
 let analytics: any = null;
@@ -100,9 +99,21 @@ const MyInterstitialAd: React.FC<MyInterstitialAdProps> = ({
       visible={modalVisible}
       onRequestClose={onClose}>
       <View style={styles.modalContainer}>
+        {/* Blurred background image */}
+        {randomBanner && (
+          <Image 
+            source={randomBanner?.imagePath} 
+            style={styles.backgroundImage}
+            blurRadius={10}
+          />
+        )}
+        
+        {/* Dark overlay on top of blurred background */}
+        <View style={styles.backgroundOverlay} />
+        
         {showCloseBtn && (
           <TouchableOpacity style={styles.closeButton} onPress={onAdClosed}>
-            <Image source={CLOSE_ICON} />
+            <Image source={CLOSE_ICON} style={styles.closeIcon} />
           </TouchableOpacity>
         )}
 
@@ -110,10 +121,10 @@ const MyInterstitialAd: React.FC<MyInterstitialAdProps> = ({
           <Animated.View style={[styles.adContainer, {opacity: fadeAnim}]}>
             <TouchableOpacity
               onPress={onAdClicked}
-              style={{height: '100%', width: '100%'}}>
+              style={styles.adTouchableArea}>
               <Image 
                 source={randomBanner?.imagePath} 
-                style={[styles.adImage, getSafeDimensions('INTERSTITIAL')]}
+                style={styles.adImage}
                 onError={(error) => console.log('Interstitial image load error:', error)}
               />
             </TouchableOpacity>
@@ -121,7 +132,7 @@ const MyInterstitialAd: React.FC<MyInterstitialAdProps> = ({
         )}
 
         <View style={styles.adBox}>
-          <Text>AD</Text>
+          <Text style={styles.adText}>AD</Text>
         </View>
       </View>
     </Modal>
@@ -133,38 +144,83 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'black',
   },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  backgroundOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Semi-transparent black overlay
+  },
   closeButton: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 45 : 20,
+    top: Platform.OS === 'ios' ? 50 : 30,
     right: 20,
-    padding: 2,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    padding: 8,
+    backgroundColor: 'rgba(0,0,0,0.7)',
     borderRadius: 20,
+    zIndex: 1000,
+  },
+  closeIcon: {
+    width: 20,
+    height: 20,
+    tintColor: 'white',
   },
   adContainer: {
     flex: 1,
-    marginVertical: '20%',
-    backgroundColor: 'black',
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 100 : 80, // Account for close button
+    paddingBottom: 80, // Account for AD label
+  },
+  adTouchableArea: {
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
   adImage: {
-    width: 300, // Fixed width to prevent large bitmap loading
-    height: 400, // Fixed height to prevent large bitmap loading
-    maxWidth: '100%',
-    maxHeight: '100%',
+    width: '95%',
+    height: '95%',
     resizeMode: 'contain',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   adBox: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 50 : 10,
-    left: 10,
+    bottom: Platform.OS === 'ios' ? 50 : 30,
+    left: 20,
     paddingHorizontal: 16,
-    paddingVertical: 2,
-    borderRadius: 5,
-    backgroundColor: 'rgba(255,255,255,0.8)',
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0,0,0,0.8)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  adText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 

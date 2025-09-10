@@ -22,9 +22,9 @@ import {
 import { usePurchases } from './SubscriptionContext';
 
 const CREDENTIALS = {
-  REWARDED_AD_UNIT_ID_ANDROID: 'ca-app-pub-1643025320304360/7992529256',
+  REWARDED_AD_UNIT_ID_ANDROID: 'ca-app-pub-1643025320304360/6858239467',
   REWARDED_AD_UNIT_ID_IOS: 'your_ios_rewarded_ad_unit_id',  
-  NATIVE_AD_UNIT_ID_ANDROID: 'ca-app-pub-1643025320304360/3718527732',
+  NATIVE_AD_UNIT_ID_ANDROID: 'ca-app-pub-1643025320304360/2787186416',
   NATIVE_AD_UNIT_ID_IOS: 'your_ios_native_ad_unit_id',  
 };
 

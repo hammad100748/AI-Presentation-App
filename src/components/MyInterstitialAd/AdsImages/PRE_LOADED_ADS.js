@@ -9,7 +9,7 @@ export const PRE_LOADED_BANNERS = [
     appLink: Platform.select({
       ios: 'https://apps.apple.com/app/ai-story-generator-novel-maker/id6538725679',
       android:
-        'https://play.google.com/store/apps/details?id=com.ford9.ai.story.generator.maker.writer.creator',
+        'https://play.google.com/store/apps/details?id=com.ford9.AI.Story.Maker.Novel.Generator.Creator.Writer.Builder',
     }),
     title: 'ai_story_generator',
   },
@@ -36,19 +36,7 @@ export const PRE_LOADED_BANNERS = [
         'https://play.google.com/store/apps/details?id=com.ford9.AI.CoverLetter.Generator.Creator.Builder.Maker.Writer',
     }),
     title: 'ai_cover_letter',
-  },
-  {
-    imagePath: Platform.select({
-      ios: null,
-      android: require('./android/AI_FOOD_WISH.webp'),
-    }),
-    appLink: Platform.select({
-      ios: null,
-      android:
-        'https://play.google.com/store/apps/details?id=com.ford9.cooking.ai.chef.planner',
-    }),
-    title: 'ai_food_wish',
-  },
+  },  
   {
     imagePath: Platform.select({
       ios: null,
@@ -74,18 +62,7 @@ export const PRE_LOADED_BANNERS = [
         'https://play.google.com/store/apps/details?id=com.ford9.ai.poem.generator.poetry.maker.builder.writer.creator',
     }),
     title: 'ai_poem_generator',
-  },
-  {
-    imagePath: Platform.select({
-      ios: null,
-      android: require('./android/QR_CODE.webp'),
-    }),
-    appLink: Platform.select({
-      ios: null,
-      android: 'https://play.google.com/store/apps/details?id=com.ford9.qrcode',
-    }),
-    title: 'qr_code_scan',
-  },
+  },  
   {
     imagePath: Platform.select({
       ios: null,
@@ -133,16 +110,5 @@ export const PRE_LOADED_BANNERS = [
         'https://play.google.com/store/apps/details?id=com.ford9.digital.tally.counter.dhikr.tasbeeh',
     }),
     title: 'digital_counter',
-  },
-  {
-    imagePath: Platform.select({
-      ios: require('./ios/AI_VIDEO.webp'),
-      android: null,
-    }),
-    appLink: Platform.select({
-      ios: 'https://apps.apple.com/app/imagine-ai-video-generator/6738406720',
-      android: null,
-    }),
-    title: 'digital_counter',
-  },
+  }  
 ];

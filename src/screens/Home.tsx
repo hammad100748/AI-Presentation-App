@@ -416,7 +416,7 @@ const Home = () => {
                 resizeMode="contain"
               />
             </View>
-            <Text style={styles.appTitle}>Slides Ai Presentation</Text>
+            <Text style={styles.appTitle}>Slides AI Presentation</Text>
             <View style={styles.headerRightContainer}>
               {currentUser ? (
                 <View style={styles.userInfoContainer}>

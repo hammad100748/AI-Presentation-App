@@ -11,7 +11,6 @@ import {
   Animated,
   Easing,
   TouchableOpacity,
-  Linking,
   Alert,
   AppState,
 } from 'react-native';
@@ -98,6 +97,7 @@ const GeneratingPresentation = () => {
   const [isPolling, setIsPolling] = useState(false);
   const [taskCompleted, setTaskCompleted] = useState(false);
   const [tokenDeducted, setTokenDeducted] = useState(false);
+  const { nativeAd } = useRewardedContext();
 
   // Refs to track component mount state and polling interval
   const isMounted = useRef(true);
@@ -588,7 +588,7 @@ The embed URL requires authentication and cannot be opened directly in a browser
     }
   };
 
-  const { nativeAd } = useRewardedContext();
+  
 
   if (error) {
     return (
@@ -641,20 +641,6 @@ The embed URL requires authentication and cannot be opened directly in a browser
                 <View style={styles.progressCircleBackground}>
                   {/* Circle progress track */}
                   <View style={styles.progressTrack} />
-
-                  {/* Curved progress fill */}
-                  <View style={styles.progressArcContainer}>
-                    <View
-                      style={[
-                        styles.progressArc,
-                        {
-                          transform: [
-                            { rotate: `${Math.min(progress * 3.6, 360)}deg` },
-                          ],
-                        },
-                      ]}
-                    />
-                  </View>
 
                   {/* Inner circle with percentage */}
                   <Animated.View
