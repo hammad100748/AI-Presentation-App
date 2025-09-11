@@ -532,7 +532,7 @@ const Home = () => {
                     }
                     activeOpacity={0.7}>
 
-                    <Text style={styles.tokenIcon}>🪙</Text>
+                    <Text style={styles.tokenIcon}>🌕</Text>
                     <Text style={styles.tokenCount}>{totalTokens}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
