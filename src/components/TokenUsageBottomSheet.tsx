@@ -224,14 +224,16 @@ const TokenUsageBottomSheet: React.FC<TokenUsageBottomSheetProps> = ({
 
       if (result) {
         setPurchaseSuccess(true);
+        console.log('✅ Purchase successful in TokenUsageBottomSheet');
         setTimeout(() => {
-          onClose();
+          onClose(); // Close the bottom sheet after successful purchase
           setPurchaseSuccess(false);
         }, 1000);
       } else {
         Alert.alert('Purchase Failed', 'Please try again');
       }
     } catch (error: any) {
+      console.error('Purchase error in TokenUsageBottomSheet:', error);
       Alert.alert('Purchase Failed', 'Please try again');
     } finally {
       setIsProcessing(false);
@@ -377,7 +379,6 @@ const TokenUsageBottomSheet: React.FC<TokenUsageBottomSheetProps> = ({
               {/* Additional spacing at the bottom */}
               <View style={styles.bottomSpacing} />
                 </>
-              )}
             </View>
           </ScrollView>
           {/* Sticky Action Buttons */}
@@ -387,7 +388,7 @@ const TokenUsageBottomSheet: React.FC<TokenUsageBottomSheetProps> = ({
               <>
                 <TouchableOpacity
                   style={styles.subscribeButton}
-                  onPress={onSubscribe || onClose}>
+                  onPress={handleSubscribe}>
                   <Text style={styles.subscribeButtonText}>Subscribe</Text>
                 </TouchableOpacity>
                 <TouchableOpacity

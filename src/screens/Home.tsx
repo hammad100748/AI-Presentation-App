@@ -911,10 +911,6 @@ const Home = () => {
         showTokenWarning
         requiredTokens={1}
         zeroTokens={totalTokens === 0}
-        onSubscribe={() => {
-          setShowTokenSheet(false);
-          navigation.navigate('SubscriptionManagement');
-        }}
       />
     </View>
   );
