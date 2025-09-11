@@ -5,7 +5,7 @@ import { useAuth } from './AuthContext';
 
 // RevenueCat API keys
 const API_KEYS = {
-  ios: 'appl_XYZAbCdEfGhIjKlMnOpQrSt', // Replace with your actual iOS API key
+  ios: 'appl_dZuvRlbdqvzqoOUaosdgAqvmHcu', // Replace with your actual iOS API key
   android: 'goog_NVLVbddlEAIGmULkiArRHVnqdNI', // Android API key
   
 };
