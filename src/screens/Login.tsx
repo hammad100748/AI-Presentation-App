@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StatusBar,
   Alert,
+  Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -121,7 +122,7 @@ const Login = () => {
   const hasNavigated = useRef(false);
 
   // Get auth context
-  const { signInWithGoogle, loading: isLoading, currentUser } = useAuth();
+  const { signInWithGoogle, signInWithApple, loading: isLoading, currentUser } = useAuth();
 
   // Check if user is already logged in and redirect to Home
   useEffect(() => {
@@ -412,6 +413,41 @@ const Login = () => {
     };
   });
 
+  // Handle sign-in based on platform
+  const handleSignIn = useCallback(async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        // Use Apple Sign-In for iOS
+        await signInWithApple();
+      } else {
+        // Use Google Sign-In for Android
+        await signInWithGoogle();
+      }
+      // Navigate to Home on successful login - navigation will be handled by the useEffect above
+    } catch (error: any) {
+      console.error('Error signing in:', error);
+
+      // Don't show alert if user cancelled
+      if (error.code === 'SIGN_IN_CANCELLED' || error.code === '1001') {
+        return;
+      }
+
+      // Check for network-related errors and show toast
+      if (error.code === 'NETWORK_ERROR' || 
+          error.message?.includes('network') || 
+          error.message?.includes('Network') ||
+          error.message?.includes('connection') ||
+          error.message?.includes('Connection') ||
+          error.code === 'auth/network-request-failed') {
+        showToast('Network error. Please check your internet connection and try again.');
+        return;
+      }
+
+      // For other errors, show simple alert
+      Alert.alert('Sign In Failed', 'Please try again');
+    }
+  }, [signInWithGoogle, signInWithApple]);
+
   // Handle Google login with memoization to prevent recreation on each render
   const handleGoogleLogin = useCallback(() => {
     console.log('Login button pressed');
@@ -461,34 +497,9 @@ const Login = () => {
       // Reset button state
       setButtonActive(false);
 
-      try {
-        // Call the signInWithGoogle function from AuthContext
-        await signInWithGoogle();
-        // Navigate to Home on successful login - navigation will be handled by the useEffect above
-      } catch (error: any) {
-        console.error('Error signing in with Google:', error);
-
-        // Don't show alert if user cancelled
-        if (error.code === 'SIGN_IN_CANCELLED') {
-          return;
-        }
-
-        // Check for network-related errors and show toast
-        if (error.code === 'NETWORK_ERROR' || 
-            error.message?.includes('network') || 
-            error.message?.includes('Network') ||
-            error.message?.includes('connection') ||
-            error.message?.includes('Connection') ||
-            error.code === 'auth/network-request-failed') {
-          showToast('Network error. Please check your internet connection and try again.');
-          return;
-        }
-
-        // For other errors, show simple alert
-        Alert.alert('Sign In Failed', 'Please try again');
-      }
+      await handleSignIn();
     }, 800);
-  }, [buttonAnim, buttonX, createBurstAnimation, signInWithGoogle, setButtonActive, setButtonStyles]);
+  }, [buttonAnim, buttonX, createBurstAnimation, handleSignIn, setButtonActive, setButtonStyles]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -574,7 +585,7 @@ const Login = () => {
             activeOpacity={0.85}
             disabled={isLoading}
       >
-            {/* Simple Google icon and text */}
+            {/* Platform-specific icon and text */}
             {isLoading ? (
               <View style={styles.loadingContainer}>
                 <Animated.View
@@ -585,10 +596,15 @@ const Login = () => {
                 />
               </View>
             ) : (
-              <Icon name="logo-google" size={22} color="#C25449" style={styles.googleIconStyle} />
+              <Icon 
+                name={Platform.OS === 'ios' ? 'logo-apple' : 'logo-google'} 
+                size={22} 
+                color={Platform.OS === 'ios' ? '#000000' : '#C25449'} 
+                style={styles.googleIconStyle} 
+              />
             )}
             <Text style={styles.googleButtonText}>
-              {isLoading ? 'Signing in...' : 'Continue with Google'}
+              {isLoading ? 'Signing in...' : Platform.OS === 'ios' ? 'Continue with Apple' : 'Continue with Google'}
             </Text>
       </TouchableOpacity>
         </View>

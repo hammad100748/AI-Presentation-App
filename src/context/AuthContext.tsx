@@ -2,6 +2,7 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { appleAuth } from '@invertase/react-native-apple-authentication';
 import React, {
   createContext,
   useState,
@@ -9,6 +10,7 @@ import React, {
   ReactNode,
   useEffect,
 } from 'react';
+import {Platform} from 'react-native';
 import {
   removeUserFromHashCollection,
   getUserFromHashCollection,
@@ -35,7 +37,8 @@ interface User {
 interface AuthContextType {
   initializing: boolean;
   currentUser: User | null;
-  signInWithGoogle: () => Promise<any>; // Updated method name
+  signInWithGoogle: () => Promise<any>; // For Android
+  signInWithApple: () => Promise<any>; // For iOS
   logout: () => void;
   deleteAccount: () => Promise<boolean>;
   loading: boolean;
@@ -47,6 +50,7 @@ const AuthContext = createContext<AuthContextType>({
   initializing: true,
   currentUser: null,
   signInWithGoogle: async () => null,
+  signInWithApple: async () => null,
   logout: () => {},
   deleteAccount: async () => false,
   loading: false,
@@ -241,26 +245,47 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({children}) => {
         console.log('❌ fcmToken is undefined:', fcmToken === undefined);
         console.log('❌ fcmToken is empty string:', fcmToken === '');
       }
-      const hashData = await getUserFromHashCollection(email);
+
+      // Handle hash collection lookup for token restoration
+      let hashData = null;
+      
+      // Check if email exists and is not a private relay email
+      if (email) {
+        console.log('🔍 Checking hash collection for email:', email);
+        console.log('🔍 Is private relay email?', email.includes('@privaterelay.appleid.com'));
+        
+        // For Apple private relay emails, we can't restore previous tokens
+        // since the private relay email changes and isn't consistent
+        if (!email.includes('@privaterelay.appleid.com')) {
+          console.log('📧 Regular email detected, checking for previous token data');
+          hashData = await getUserFromHashCollection(email);
+        } else {
+          console.log('🔒 Private relay email detected, skipping token restoration');
+          console.log('🔒 Private relay emails are unique per app and cannot be used for token restoration');
+        }
+      } else {
+        console.log('❌ No email provided');
+      }
+
       if (hashData) {
         try {
           if (hashData && hashData.tokens) {
             initialTokens = hashData.tokens;
             await removeUserFromHashCollection(email);
+            console.log('✅ Token data restored from hash collection:', initialTokens);
           } else {
-            console.log(
-              'No previous token data found, using default tokens:',
-              initialTokens,
-            );
+            console.log('No previous token data found, using default tokens:', initialTokens);
           }
         } catch (hashError: any) {
           console.error('Error checking hash collection:', hashError);
           crashlytics().recordError(hashError);
         }
       } else {
-        console.log('No email provided, using default tokens');
+        console.log('📝 Using default tokens for new user:', initialTokens);
       }
-      await firestore().collection('users').doc(uid).set({
+
+      // Create user document in Firestore
+      const userDoc = {
         uid,
         email,
         displayName,
@@ -268,11 +293,105 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({children}) => {
         photoURL,
         tokens: initialTokens,
         fcmTokens,
-      });
-      console.log('User successfully added to Firestore');
+        // Add metadata for Apple Sign-In users
+        authProvider: email?.includes('@privaterelay.appleid.com') ? 'apple' : 'google',
+        isPrivateRelay: email?.includes('@privaterelay.appleid.com') || false,
+        createdAt: firestore.Timestamp.now(),
+      };
+
+      await firestore().collection('users').doc(uid).set(userDoc);
+      console.log('✅ User successfully added to Firestore with auth provider:', userDoc.authProvider);
+      
+      if (userDoc.isPrivateRelay) {
+        console.log('🔒 User signed in with Apple Private Relay email');
+      }
+      
     } catch (error: any) {
       console.error('Error adding user to Firestore:', error);
       crashlytics().recordError(error);
+    }
+  };
+
+  const signInWithApple = async () => {
+    try {
+      setLoading(true);
+      
+      // Check if Apple Sign-In is available
+      if (!appleAuth.isSupported) {
+        throw new Error('Apple Sign-In is not supported on this device');
+      }
+
+      // Start the sign-in request
+      const appleAuthRequestResponse = await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.LOGIN,
+        requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
+      });
+
+      // Ensure Apple returned a user identityToken
+      if (!appleAuthRequestResponse.identityToken) {
+        throw new Error('Apple Sign-In failed - no identity token returned');
+      }
+
+      console.log('Apple Sign-In Response:', {
+        email: appleAuthRequestResponse.email,
+        fullName: appleAuthRequestResponse.fullName,
+        user: appleAuthRequestResponse.user,
+        realUserStatus: appleAuthRequestResponse.realUserStatus,
+      });
+
+      // Create a Firebase credential from the response
+      const { identityToken, nonce } = appleAuthRequestResponse;
+      const appleCredential = auth.AppleAuthProvider.credential(identityToken, nonce);
+
+      // Sign the user in with the credential
+      const userCredential = await auth().signInWithCredential(appleCredential);
+      
+      // Handle the email scenario - Apple provides email only on first sign-in
+      // or we need to get it from Firebase Auth user
+      let userEmail = appleAuthRequestResponse.email || userCredential.user.email;
+      
+      // Handle display name - combine first and last name from Apple response
+      let displayName = userCredential.user.displayName;
+      if (!displayName && appleAuthRequestResponse.fullName) {
+        const { givenName, familyName } = appleAuthRequestResponse.fullName;
+        if (givenName || familyName) {
+          displayName = `${givenName || ''} ${familyName || ''}`.trim();
+        }
+      }
+      
+      console.log('Apple Sign-In processed email:', userEmail);
+      console.log('Apple Sign-In processed displayName:', displayName);
+      console.log('Firebase user email:', userCredential.user.email);
+      console.log('Is email private relay?', userEmail?.includes('@privaterelay.appleid.com'));
+      
+      setLoading(false);
+      showToast('Sign in Successfully');
+      
+      return userCredential;
+    } catch (error: any) {
+      console.error('Apple Sign-In Error:', error);
+      crashlytics().recordError(error);
+      console.error('Error details:', error.message, error.code);
+      crashlytics().log(`Apple Sign-In Error details: ${error.message}, ${error.code}`);
+      setLoading(false);
+      
+      // Handle specific Apple Sign-In errors
+      if (error.code === '1001') {
+        // User cancelled the sign-in flow
+        console.log('User cancelled Apple Sign-In');
+        return null;
+      }
+      
+      // Check for network-related errors and show toast
+      if (error.code === 'NETWORK_ERROR' || 
+          error.message?.includes('network') || 
+          error.message?.includes('Network') ||
+          error.message?.includes('connection') ||
+          error.message?.includes('Connection')) {
+        showToast('Network error. Please check your internet connection and try again.');
+      }
+      
+      throw error; // Re-throw to allow handling in the UI
     }
   };
 
@@ -347,25 +466,52 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({children}) => {
       if (userData && userData.email) {
         setDeleteProgress('Preserving your tokens...');
         
-        // Use Promise.all to run operations in parallel for better performance
-        const operations = [
-          // Store tokens in hash collection (fallback)
-          storeUserInHashCollection(userData.email, userData.tokens || 0),
-          // Delete user document from Firestore
+        // Check if this is a private relay email
+        const isPrivateRelay = userData.email.includes('@privaterelay.appleid.com');
+        
+        console.log('🔍 Account deletion - Email type:', {
+          email: userData.email,
+          isPrivateRelay,
+          authProvider: userData.authProvider
+        });
+        
+        let operations = [
+          // Always delete user document from Firestore
           firestore().collection('users').doc(currentUser.uid).delete()
         ];
 
+        // Only try to preserve tokens for non-private relay emails
+        // Private relay emails can't be used for token restoration since they're unique per app
+        if (!isPrivateRelay) {
+          console.log('📧 Regular email - preserving tokens for future restoration');
+          operations.push(
+            storeUserInHashCollection(userData.email, userData.tokens || 0)
+          );
+        } else {
+          console.log('🔒 Private relay email - tokens cannot be preserved');
+          console.log('🔒 Private relay emails are unique and cannot be used for token restoration');
+        }
+
         // Try cloud function first, but don't wait for it if it fails
         setDeleteProgress('Processing account deletion...');
-        const cloudFunctionPromise = callDeleteUserDataFunction(
-          userData.email,
-          userData.tokens || 0,
-          currentUser.uid,
-        ).catch((error: any) => {
-          console.log('Cloud function failed, using fallback:', error.message);
-          crashlytics().recordError(error);
-          return null; // Don't throw, just continue with fallback
-        });
+        let cloudFunctionPromise;
+        
+        if (!isPrivateRelay) {
+          // Only call cloud function for regular emails
+          cloudFunctionPromise = callDeleteUserDataFunction(
+            userData.email,
+            userData.tokens || 0,
+            currentUser.uid,
+          ).catch((error: any) => {
+            console.log('Cloud function failed, using fallback:', error.message);
+            crashlytics().recordError(error);
+            return null; // Don't throw, just continue with fallback
+          });
+        } else {
+          // For private relay emails, create a resolved promise
+          cloudFunctionPromise = Promise.resolve(null);
+          console.log('🔒 Skipping cloud function for private relay email');
+        }
 
         // Wait for all operations to complete
         await Promise.all([...operations, cloudFunctionPromise]);
@@ -375,7 +521,12 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({children}) => {
         await logout();
         
         setDeleteProgress('Account deleted successfully!');
-        showToast('Account deleted successfully');
+        
+        if (isPrivateRelay) {
+          showToast('Account deleted. Note: Tokens cannot be restored for Apple Private Relay emails.');
+        } else {
+          showToast('Account deleted successfully');
+        }
         
         // Small delay to show success message
         setTimeout(() => {
@@ -407,6 +558,7 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({children}) => {
     initializing,
     currentUser,
     signInWithGoogle, // Use the updated method name
+    signInWithApple, // Apple Sign-In for iOS
     logout,
     deleteAccount,
     loading,
