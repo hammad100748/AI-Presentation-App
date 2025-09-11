@@ -6,7 +6,6 @@ import {
   SafeAreaView,
   TouchableOpacity,
   StatusBar,
-  Dimensions,
   Alert,
 } from 'react-native';
 import Animated, {

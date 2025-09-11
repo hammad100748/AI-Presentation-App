@@ -18,6 +18,8 @@
 	<string>ca-app-pub-1643025320304360~5531348373</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This identifier will be used to deliver personalized ads to you.</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
