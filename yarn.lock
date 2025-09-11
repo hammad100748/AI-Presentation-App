@@ -1574,6 +1574,11 @@
   resolved "https://registry.yarnpkg.com/@iabtcf/core/-/core-1.5.6.tgz#92568d89252fbf205aa65836703cb0a52e812382"
   integrity sha512-u2q9thI9vLurYZdGtyJsDYOqoeLc4EgQsYGSc+UVibYII61B/ENJPZS6eFlML1F0hSoTR/goptpo5nGRDkKd2w==
 
+"@invertase/react-native-apple-authentication@^2.4.1":
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/@invertase/react-native-apple-authentication/-/react-native-apple-authentication-2.4.1.tgz#166cc923a6424e19791d20f47d08ad648499db15"
+  integrity sha512-SzWXS/T6H62ScTX+jMLJFLAcBp2p8P30J5uQEimpLMUolqnv/iAljfpwTvZYaniVmMSUXjG0/N95ScUIcmsYRQ==
+
 "@isaacs/cliui@^8.0.2":
   version "8.0.2"
   resolved "https://registry.yarnpkg.com/@isaacs/cliui/-/cliui-8.0.2.tgz#b37667b7bc181c168782259bab42474fbf52b550"

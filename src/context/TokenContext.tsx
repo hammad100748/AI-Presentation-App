@@ -32,7 +32,7 @@ interface TokenContextType {
 
 const TokenContext = createContext<TokenContextType>({
   tokens: {freeTokens: 1, premiumToken: 0},
-  loading: false,
+  loading: true, // Default to loading so ads don't show immediately
   hasSubscription: false,
   isSubscriptionActive: false,
   consumeToken: async () => false,
@@ -132,7 +132,16 @@ export const TokenProvider: React.FC<{children: ReactNode}> = ({children}) => {
             // This means they will see ads and have limited access
             const isUserFree = safeTokens.premiumToken === 0;
             setIsFreeUser(isUserFree);
-            // console.log('User is free user (will see ads):', isUserFree, 'Tokens:', safeTokens);
+            
+            console.log('🎯 [TOKEN_CONTEXT] User status determined:', {
+              freeTokens: safeTokens.freeTokens,
+              premiumToken: safeTokens.premiumToken,
+              totalTokens: safeTokens.freeTokens + safeTokens.premiumToken,
+              isUserFree,
+              hasSubscription: !!userData.subscription,
+              isSubscriptionActive: isActive,
+              userId: currentUser.uid
+            });
           }
 
           setLoading(false);
@@ -183,7 +192,13 @@ export const TokenProvider: React.FC<{children: ReactNode}> = ({children}) => {
       // Update isFreeUser status after consuming tokens
       const newIsFreeUser = newTokenObj.premiumToken === 0;
       setIsFreeUser(newIsFreeUser);
-      // console.log('Updated isFreeUser status:', newIsFreeUser);
+      
+      console.log('🔄 [TOKEN_CONTEXT] Token consumed, updated status:', {
+        oldTokens: tokens,
+        newTokens: newTokenObj,
+        newIsFreeUser,
+        tokensConsumed: tokensToDeduct
+      });
       
       // console.log('Consumed token for full presentation. New balance:', newTokenObj);
       return true;

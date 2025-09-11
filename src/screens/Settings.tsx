@@ -24,7 +24,6 @@ import {clearRecentPresentations, getRecentPresentations} from '../utils/present
 import {showToast} from '../utils/showTost';
 import { getSafeDimensions } from '../utils/imageOptimization';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import LoadingScreen from '../components/LoadingScreen';
 import crashlytics from '@react-native-firebase/crashlytics';
 import {usePurchases} from '../context/SubscriptionContext';
 // Import gradient background

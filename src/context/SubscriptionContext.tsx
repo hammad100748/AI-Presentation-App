@@ -197,7 +197,10 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({
   };
 
   const checkIfUserIsSubscribed = async () => {
-    setIsSubscribed(tokens.premiumToken > 0);
+    console.log('🔍 [SUBSCRIPTION] Checking subscription status with tokens:', tokens);
+    const subscriptionStatus = tokens.premiumToken > 0;
+    setIsSubscribed(subscriptionStatus);
+    console.log('🔍 [SUBSCRIPTION] Updated isSubscribed to:', subscriptionStatus);
     // SplashScreen.hide();
   };
 

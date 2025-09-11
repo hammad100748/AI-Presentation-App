@@ -1,7 +1,6 @@
-import { Platform, Alert, NativeModules } from 'react-native';
+import { Platform, NativeModules } from 'react-native';
 import Share from 'react-native-share';
 import * as RNFS from 'react-native-fs';
-import { AdsConsent } from 'react-native-google-mobile-ads';
 import { requestStoragePermission } from './fileUtils';
 
 // Import FileProvider if available

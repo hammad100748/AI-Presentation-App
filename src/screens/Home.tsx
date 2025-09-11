@@ -58,15 +58,15 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const Home = () => {
-  const { isSubscribed } = usePurchases();
+  const { isSubscribed, initialized: subscriptionInitialized } = usePurchases();
   const { showRewardedAd, nativeAd }: any = useRewardedContext();
-  const { totalTokens, isFreeUser } = useTokens();
+  const { totalTokens, isFreeUser, loading: tokensLoading, tokens } = useTokens();
 
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [inputText, setInputText] = useState('');
   const [validationError, setValidationError] = useState('');
   const { signInWithGoogle, currentUser, loading, logout } = useAuth();
-  const { shouldShowPaywall } = useAppUsage();
+  const { shouldShowPaywall, initialized: appUsageInitialized } = useAppUsage();
   const [profileMenuVisible, setProfileMenuVisible] = useState(false);
   const [recentPresentations, setRecentPresentations] = useState<
     RecentPresentation[]
@@ -77,10 +77,32 @@ const Home = () => {
     useState<RecentPresentation | null>(null);
   const [pendingShareAfterSubscribe, setPendingShareAfterSubscribe] = useState(false);
   const [showTokenSheet, setShowTokenSheet] = useState(false);
+  const [appOpenAdInstance, setAppOpenAdInstance] = useState<any>(null);
 
 
 
   const isFocused = useIsFocused();
+
+  // Determine if it's safe to show paywall - wait for all states to be properly loaded
+  const canShowPaywall = React.useMemo(() => {
+    const allStatesLoaded = subscriptionInitialized && 
+                           appUsageInitialized && 
+                           !tokensLoading && 
+                           !!currentUser;
+    
+    console.log('🔍 [PAYWALL_LOGIC] Can show paywall check:', {
+      subscriptionInitialized,
+      appUsageInitialized,
+      tokensLoading,
+      currentUser: !!currentUser,
+      isSubscribed,
+      shouldShowPaywall,
+      allStatesLoaded,
+      finalDecision: allStatesLoaded && !isSubscribed && shouldShowPaywall
+    });
+    
+    return allStatesLoaded && !isSubscribed && shouldShowPaywall;
+  }, [subscriptionInitialized, appUsageInitialized, tokensLoading, currentUser, isSubscribed, shouldShowPaywall]);
 
   // Add debugging logs for paywall visibility
   useEffect(() => {
@@ -88,9 +110,14 @@ const Home = () => {
       isSubscribed,
       shouldShowPaywall,
       totalTokens,
-      paywallVisible: !isSubscribed && shouldShowPaywall
+      subscriptionInitialized,
+      appUsageInitialized,
+      tokensLoading,
+      isFreeUser,
+      currentUser: !!currentUser,
+      canShowPaywall
     });
-  }, [isSubscribed, shouldShowPaywall, totalTokens]);
+  }, [isSubscribed, shouldShowPaywall, totalTokens, subscriptionInitialized, appUsageInitialized, tokensLoading, isFreeUser, currentUser, canShowPaywall]);
 
   // Hide ShareAdBottomSheet if user subscribes
   useEffect(() => {
@@ -126,63 +153,141 @@ const Home = () => {
   }, [isFocused, isSubscribed, pendingShareAfterSubscribe, presentationToShare]);
 
   useEffect(() => {
-    try {
+    // Cleanup function to remove any existing ad instance
+    const cleanup = () => {
+      if (appOpenAdInstance) {
+        console.log('🧹 [APP_OPEN] Cleaning up existing ad instance');
+        try {
+          // Try to destroy the existing instance if possible
+          setAppOpenAdInstance(null);
+        } catch (e) {
+          console.warn('⚠️ [APP_OPEN] Error cleaning up ad instance:', e);
+        }
+      }
+    };
+
+    try {      
+      console.log('🔍 [APP_OPEN] useEffect triggered with:', {
+        tokensLoading,
+        isFreeUser,
+        totalTokens,
+        currentUser: !!currentUser,
+        isFocused,
+        tokens: JSON.stringify(tokens),
+        hasExistingAdInstance: !!appOpenAdInstance
+      });
+
+      // Always cleanup first
+      cleanup();
+
+      // Don't run if tokens are still loading
+      if (tokensLoading) {
+        console.log('⏳ [APP_OPEN] Tokens still loading, skipping ad');
+        return cleanup;
+      }
+
+      // Don't run if user is not free (has premium tokens)
+      if (!isFreeUser) {
+        console.log('💎 [APP_OPEN] User is premium (has premium tokens), skipping ad. Current tokens:', tokens);
+        return cleanup;
+      }
+
+      // Don't run if screen is not focused
+      if (!isFocused) {
+        console.log('👁️ [APP_OPEN] Screen not focused, skipping ad');
+        return cleanup;
+      }
+
+      // Don't run if no user is logged in
+      if (!currentUser) {
+        console.log('👤 [APP_OPEN] No user logged in, skipping ad');
+        return cleanup;
+      }
+
+      console.log('⚠️ [APP_OPEN] WARNING: All conditions met - showing App Open Ad for free user');
+      console.log('🚨 [APP_OPEN] DETAILED STATUS:', {
+        tokensLoading,
+        isFreeUser,
+        tokens,
+        totalTokens,
+        currentUser: currentUser?.uid,
+        isFocused
+      });
 
       const adUnitId = __DEV__ ? TestIds.APP_OPEN : 'ca-app-pub-1643025320304360/6913018358';
 
-      const appOpenAdInstance = AppOpenAd.createForAdRequest(adUnitId, {
+      const newAppOpenAdInstance = AppOpenAd.createForAdRequest(adUnitId, {
         requestNonPersonalizedAdsOnly: false,
       });
 
-      const removeLoadedListener = appOpenAdInstance.addAdEventListener(
+      setAppOpenAdInstance(newAppOpenAdInstance);
+
+      const removeLoadedListener = newAppOpenAdInstance.addAdEventListener(
         AdEventType.LOADED,
         () => {
           try {
-            console.log('App Open Ad loaded, showing...');
-            appOpenAdInstance.show();
+            // Double-check user status before showing
+            if (!isFreeUser) {
+              console.log('🛑 [APP_OPEN] User is now premium, NOT showing loaded ad');
+              return;
+            }
+            console.log('📱 [APP_OPEN] Ad loaded successfully, showing...');
+            newAppOpenAdInstance.show();
           } catch (e) {
-            console.warn('AppOpenAd show error', e);
+            console.warn('❌ [APP_OPEN] Show error:', e);
           }
         }
       );
 
-      const removeClosedListener = appOpenAdInstance.addAdEventListener(
+      const removeClosedListener = newAppOpenAdInstance.addAdEventListener(
         AdEventType.CLOSED,
         async () => {
-          console.log('App Open Ad closed, updating cooldown timer');
-          // Update the last shown time
+          console.log('✅ [APP_OPEN] Ad closed by user');
 
-          // Cleanup listeners
+          // Cleanup listeners and instance
           removeLoadedListener?.();
           removeErrorListener?.();
           removeClosedListener?.();
+          setAppOpenAdInstance(null);
         }
       );
 
-      const removeErrorListener = appOpenAdInstance.addAdEventListener(
+      const removeErrorListener = newAppOpenAdInstance.addAdEventListener(
         AdEventType.ERROR,
         (e: any) => {
           const msg = e?.message || JSON.stringify(e);
-          console.warn('AppOpenAd load error', msg);
+          console.warn('❌ [APP_OPEN] Load error:', msg);
 
-          // Cleanup listeners on error
+          // Cleanup listeners and instance on error
           removeLoadedListener?.();
           removeErrorListener?.();
           removeClosedListener?.();
+          setAppOpenAdInstance(null);
         }
       );
 
       try {
-        console.log('Loading App Open Ad...');
-        appOpenAdInstance.load();
+        console.log('🔄 [APP_OPEN] Starting ad load...');
+        newAppOpenAdInstance.load();
       } catch (e) {
-        console.warn('AppOpenAd load call failed', e);
+        console.warn('❌ [APP_OPEN] Load call failed:', e);
+        setAppOpenAdInstance(null);
       }
 
+      // Return cleanup function
+      return () => {
+        console.log('🧹 [APP_OPEN] useEffect cleanup called');
+        removeLoadedListener?.();
+        removeErrorListener?.();
+        removeClosedListener?.();
+        setAppOpenAdInstance(null);
+      };
+
     } catch (error) {
-      console.error('Error in App Open Ad logic:', error);
+      console.error('💥 [APP_OPEN] Error in App Open Ad logic:', error);
+      return cleanup;
     }
-  }, [])
+  }, [tokensLoading, isFreeUser, isFocused, currentUser, tokens])
 
 
   const loadRecentPresentations = async () => {
@@ -397,8 +502,8 @@ const Home = () => {
           translucent={Platform.OS === 'android'}
         />
 
-        {/* Paywall Modal */}
-        <PaywallModal visible={!isSubscribed && shouldShowPaywall} />
+        {/* Paywall Modal - Only show when all states are confirmed loaded and user needs paywall */}
+        <PaywallModal visible={canShowPaywall} />
 
         {/* SafeAreaView for top only, with Android status bar height padding */}
         <SafeAreaView
@@ -926,7 +1031,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: adjust(16),
-    paddingTop: adjust(30),
+    paddingTop: adjust(10),
     paddingBottom: adjust(16),
   },
   input: {
@@ -948,7 +1053,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     color: '#888',
     fontSize: adjust(12),
-    marginBottom: adjust(16),
+    marginBottom: adjust(12),
   },
   topicsSection: {
     marginBottom: adjust(16),
@@ -983,8 +1088,8 @@ const styles = StyleSheet.create({
   },
   recentSection: {
     width: '100%',
-    marginTop: adjust(24),
-    marginBottom: adjust(20),
+    marginTop: adjust(20),
+    marginBottom: adjust(10),
   },
   recentHeader: {
     flexDirection: 'row',
@@ -1069,7 +1174,6 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   footer: {
-    marginTop: 'auto',
     alignItems: 'center',
   },
   footerItem: {
@@ -1082,7 +1186,7 @@ const styles = StyleSheet.create({
   footerLinks: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: adjust(8),
+    marginTop: adjust(2),
   },
   footerLinkText: {
     fontSize: adjust(12),

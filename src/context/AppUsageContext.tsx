@@ -10,6 +10,7 @@ interface AppUsageContextType {
   dismissPaywall: () => Promise<void>;
   resetPaywallStatus: () => Promise<void>;
   forceShowPaywall: () => Promise<void>;
+  initialized: boolean; // Add loading state
 }
 
 // Keys for AsyncStorage
@@ -20,10 +21,11 @@ const HAS_SEEN_PAYWALL_ONCE_KEY = '@ai_presentation_has_seen_paywall_once';
 const AppUsageContext = createContext<AppUsageContextType>({
   appLaunchCount: 0,
   lastVisitDate: '',
-  shouldShowPaywall: true,
+  shouldShowPaywall: false, // Default to false to prevent initial flash
   dismissPaywall: async () => {},
   resetPaywallStatus: async () => {},
   forceShowPaywall: async () => {},
+  initialized: false, // Default to not initialized
 });
 
 export const AppUsageProvider: React.FC<{children: ReactNode}> = ({ children }) => {
@@ -196,6 +198,7 @@ export const AppUsageProvider: React.FC<{children: ReactNode}> = ({ children }) 
     dismissPaywall,
     resetPaywallStatus,
     forceShowPaywall,
+    initialized,
   };
 
   return <AppUsageContext.Provider value={value}>{children}</AppUsageContext.Provider>;

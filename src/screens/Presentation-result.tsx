@@ -10,7 +10,6 @@ import {
   ImageBackground,
   Image,
   Alert,
-  Linking,
   ActivityIndicator,
   Animated,
   Easing,
@@ -1060,14 +1059,14 @@ The embed URL requires authentication and cannot be opened directly in a browser
                 resizeMode="contain"
               />
             </View>
-            <Text style={styles.appTitle}>Slides Ai Presentation</Text>
+            <Text style={styles.appTitle}>Slides AI Presentation</Text>
           </View>
 
           {/* Token display */}
-          <View style={styles.tokenContainer}>
+          <TouchableOpacity onPress={() => navigation.navigate('SubscriptionManagement')} style={styles.tokenContainer}>
             <Text style={styles.tokenIcon}>🪙</Text>
             <Text style={styles.tokenCount}>{totalTokens}</Text>
-          </View>
+          </TouchableOpacity>
         </SafeAreaView>
 
         {/* Main Content */}
@@ -1124,7 +1123,7 @@ The embed URL requires authentication and cannot be opened directly in a browser
                         />
                         <Text style={styles.downloadingText}>
                           {downloadProgress < 5
-                            ? 'Starting...'
+                            ? 'Downloading...'
                             : `${downloadProgress.toFixed(0)}%`}
                         </Text>
                         {/* Progress bar overlay */}

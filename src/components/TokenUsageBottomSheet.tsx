@@ -265,41 +265,9 @@ const TokenUsageBottomSheet: React.FC<TokenUsageBottomSheetProps> = ({
             alwaysBounceVertical={false}
             contentContainerStyle={{flexGrow: 1}}>
             <View style={[styles.container, { paddingBottom: adjust(120) }]}>
-              {zeroTokens ? (
-                // Simplified view for zero tokens
-                <View style={styles.zeroTokensContainer}>
-                  <View style={styles.zeroTokensIcon}>
-                    <Ionicons name="warning" size={adjust(60)} color="#D32F2F" />
-                  </View>
-                  <Text style={styles.zeroTokensTitle}>No Tokens Remaining</Text>
-                  <Text style={styles.zeroTokensMessage}>
-                    You have used all your available tokens. Buy to get more tokens and continue creating presentations.
-                    </Text>
-                  <View style={styles.zeroTokensInfo}>
-                    <View style={styles.zeroTokensInfoItem}>
-                      <Ionicons name="refresh-circle" size={adjust(20)} color="#4CAF50" />
-                      <Text style={styles.zeroTokensInfoText}>
-                        Tokens refresh automatically
-                      </Text>
-                    </View>
-                    <View style={styles.zeroTokensInfoItem}>
-                      <Ionicons name="star" size={adjust(20)} color="#4CAF50" />
-                      <Text style={styles.zeroTokensInfoText}>
-                        Premium features included
-                      </Text>
-                    </View>
-                    <View style={styles.zeroTokensInfoItem}>
-                      <Ionicons name="shield-checkmark" size={adjust(20)} color="#4CAF50" />
-                      <Text style={styles.zeroTokensInfoText}>
-                        Ad-free experience
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              ) : (
-                // Regular view with plans
+              
                 <>
-              {showTokenWarning && (
+              {showTokenWarning && !zeroTokens && (
                 <View style={styles.tokenWarningBanner}>
                   <Text style={styles.tokenWarningText}>
                     ⚠️ You need 1 token to generate this presentation.
@@ -307,7 +275,7 @@ const TokenUsageBottomSheet: React.FC<TokenUsageBottomSheetProps> = ({
                 </View>
               )}
               {/* Out of tokens message */}
-              {outOfTokens && (
+              {zeroTokens && (
                 <View style={{marginBottom: adjust(16), alignItems: 'center'}}>
                   <Text style={{color: '#D32F2F', fontWeight: 'bold', fontSize: adjust(16)}}>
                     You are out of tokens.
