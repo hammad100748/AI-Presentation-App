@@ -28,7 +28,6 @@ import crashlytics from '@react-native-firebase/crashlytics';
 import { useRewardedContext } from '../context/RewardedAdContext';
 import { NativeAdView, NativeAsset, NativeAssetType } from 'react-native-google-mobile-ads';
 import adjust from '../utils/adjust';
-import { showToast } from '../utils/showTost';
 
 // Import gradient background
 const gradientBg = require('../assets/images/gradient_bg.jpeg');
