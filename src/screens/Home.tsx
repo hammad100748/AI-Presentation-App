@@ -78,6 +78,7 @@ const Home = () => {
   const [pendingShareAfterSubscribe, setPendingShareAfterSubscribe] = useState(false);
   const [showTokenSheet, setShowTokenSheet] = useState(false);
   const [appOpenAdInstance, setAppOpenAdInstance] = useState<any>(null);
+  const [hasShownAppOpenAd, setHasShownAppOpenAd] = useState(false);
 
 
 
@@ -180,6 +181,12 @@ const Home = () => {
       // Always cleanup first
       cleanup();
 
+      // Don't run if we've already shown the ad this session
+      if (hasShownAppOpenAd) {
+        console.log('🚫 [APP_OPEN] Already shown app open ad this session, skipping');
+        return cleanup;
+      }
+
       // Don't run if tokens are still loading
       if (tokensLoading) {
         console.log('⏳ [APP_OPEN] Tokens still loading, skipping ad');
@@ -233,6 +240,7 @@ const Home = () => {
             }
             console.log('📱 [APP_OPEN] Ad loaded successfully, showing...');
             newAppOpenAdInstance.show();
+            setHasShownAppOpenAd(true); // Mark as shown
           } catch (e) {
             console.warn('❌ [APP_OPEN] Show error:', e);
           }
@@ -287,7 +295,7 @@ const Home = () => {
       console.error('💥 [APP_OPEN] Error in App Open Ad logic:', error);
       return cleanup;
     }
-  }, [tokensLoading, isFreeUser, isFocused, currentUser, tokens])
+  }, [tokensLoading, isFreeUser, isFocused, currentUser, tokens, hasShownAppOpenAd])
 
 
   const loadRecentPresentations = async () => {
@@ -936,7 +944,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: adjust(18),
     paddingVertical: adjust(10),
-    marginTop: Platform.OS === 'ios' ? adjust(44) : adjust(8),
+    marginTop: Platform.OS === 'ios' ? adjust(8) : adjust(8),
     justifyContent: 'space-between',
   },
   appIconContainer: {
@@ -1315,65 +1323,84 @@ const styles = StyleSheet.create({
   // Native Ad Styles
   nativeAdContainer: {
     width: '100%',
-    marginBottom: adjust(24),
+    paddingHorizontal: Platform.OS === 'ios' ? adjust(4) : 0,
   },
   nativeAdView: {
     backgroundColor: '#FFFFFF',
     borderRadius: adjust(14),
-    padding: adjust(12),
+    padding: adjust(16),
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: adjust(4),
+    elevation: 3,
   },
   adHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: adjust(8),
+    marginBottom: adjust(12),
   },
   adHeaderText: {
     flex: 1,
-    marginRight: adjust(8),
+    marginRight: adjust(12),
   },
   adHeadline: {
     fontSize: adjust(16),
     fontWeight: '600',
     color: '#333',
-    marginBottom: adjust(2),
+    marginBottom: adjust(4),
+    lineHeight: adjust(22),
   },
   adAdvertiser: {
-    fontSize: adjust(12),
+    fontSize: adjust(13),
     color: '#666',
     fontWeight: '400',
   },
   adBadge: {
     backgroundColor: '#4F67ED',
-    paddingHorizontal: adjust(6),
-    paddingVertical: adjust(2),
-    borderRadius: adjust(4),
+    paddingHorizontal: adjust(8),
+    paddingVertical: adjust(4),
+    borderRadius: adjust(6),
+    alignSelf: 'flex-start',
+    marginRight: adjust(12),
   },
   adBadgeText: {
     fontSize: adjust(10),
     color: '#FFFFFF',
     fontWeight: '600',
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   adBody: {
     fontSize: adjust(14),
     color: '#333',
     lineHeight: adjust(20),
-    marginBottom: adjust(12),
+    marginBottom: adjust(16),
   },
   adCallToAction: {
     backgroundColor: '#4F67ED',
-    paddingHorizontal: adjust(16),
-    paddingVertical: adjust(8),
-    borderRadius: adjust(8),
-    alignSelf: 'flex-start',
+    paddingHorizontal: adjust(24),
+    paddingVertical: adjust(12),
+    borderRadius: adjust(10),
+    alignSelf: 'center',
+    width: '95%',
+    alignItems: 'center',
+    shadowColor: '#4F67ED',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: adjust(4),
+    elevation: 3,
+    marginBottom: adjust(20),
+    marginRight: '5%' 
   },
   adCallToActionText: {
-    fontSize: adjust(14),
+    fontSize: adjust(15),
     color: '#FFFFFF',
     fontWeight: '600',
+    textAlign: 'center',
   },
 });
 
